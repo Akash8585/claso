@@ -1,0 +1,14 @@
+# This is a placeholder for the model architecture diagram
+# The actual PNG file should be generated from the Mermaid diagram in ARCHITECTURE.md
+# 
+# To generate:
+# 1. Copy the "FastEnhancedTransformer Architecture" Mermaid code from ARCHITECTURE.md
+# 2. Use https://mermaid.live/ to render and export as PNG
+# 3. Replace this file with the generated PNG
+#
+# Diagram shows:
+# - Input Processing (Tokenizer, Embeddings, Positional Encoding)
+# - Encoder Stack (4 layers with self-attention)
+# - Decoder Stack (4 layers with cross-attention)
+# - Output Processing (Linear projection, Softmax)
+# - Attention Mechanisms (Multi-head attention details)

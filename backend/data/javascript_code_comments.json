@@ -1,0 +1,86 @@
+[
+  [
+    "function withHeadingContext(relativeHeadingLevel, markdown) {\n  return markdown.replaceAll(/^(#+)/gm, (match, markdownHeadingTokens) => {\n    return \"#\".repeat(markdownHeadingTokens.length + relativeHeadingLevel);\n  }",
+    "* Adjusts the headings in the given `markdown` to be in a given heading context.\n * Headings must start in a line.\n * Preceding whitespace or any other character will result in the heading not being recognized.\n *\n * @example `withHeadingContext(2, '# Heading') === '### Heading'`\n * @param {number} relativeHeadingLevel\n * @param {string} markdown"
+  ],
+  [
+    "function request( url ) {\n\tconsole.log(\n\t\t'Requesting URL \"%s\"',\n\t\turl.length > 70\n\t\t\t? url.substring( 0, 67 ) + '...'\n\t\t\t: url\n\t);\n\tconst res = await phin.promisified( url );\n\tif ( res.statusCode !== 200 ) {\n\t\tthrow new Error(\n\t\t\t'HTTP response code ' + res.statusCode\n\t\t\t+ ' for URL: ' + url\n\t\t);\n\t}",
+    "* Perform an HTTP request to a URL and return the request body."
+  ],
+  [
+    "function copyAssetToBuild( filename, content = null, addSuffix = true ) {\n\tlet destFilename = filename;\n\tif ( addSuffix ) {\n\t\tdestFilename = destFilename\n\t\t\t.replace( /(\\.[^.]+)$/, '-' + assetCacheBuster + '$1' );\n\t}",
+    "* Write a file to site/build/assets/ (from memory or from an existing file in\n * site/assets/) and include a cache buster in the new name.  Return the URL to\n * the asset file."
+  ],
+  [
+    "function githubEditUrl( filename ) {\n\treturn (\n\t\t'https://github.com/remoteintech/remote-jobs/edit/main/'\n\t\t+ filename\n\t);\n}",
+    "* Return a URL to edit a page on GitHub."
+  ],
+  [
+    "function writePage( filename, pageContent ) {\n\tfilename = path.join( siteBuildPath, filename );\n\tif ( ! fs.existsSync( path.dirname( filename ) ) ) {\n\t\tfs.mkdirSync( path.dirname( filename ) );\n\t}",
+    "* Write a page's contents to an HTML file."
+  ],
+  [
+    "function buildSite() {\n\t// Load the HTML from the WP.com blog site\n\tconst $ = cheerio.load( await request( 'https://blog.remoteintech.company/' ) );\n\n\t// Load stylesheets from the WP.com blog site\n\tconst wpcomStylesheets = $( 'style, link[rel=stylesheet]' ).map( ( i, el ) => {\n\t\tconst $el = $( el );\n\t\tconst stylesheet = {\n\t\t\tid: $el.attr( 'id' ) || null,\n\t\t\tmedia: $el.attr( 'media' ) || null,\n\t\t}",
+    "* The main function that prepares the static site."
+  ],
+  [
+    "function error( filename, msg, ...params ) {\n\t\terrors.push( {\n\t\t\tfilename,\n\t\t\tmessage: util.format( msg, ...params ),\n\t\t}",
+    "* The main exported function\n *\n * Start with a directory including a README.md and company-profiles/*.md\n * files, and validate and parse the content of the Markdown files."
+  ],
+  [
+    "function getUrlInfo(url) {\n\t    const data = {}",
+    "* Getting info about the url. It includes checking isEmail of isInternal\n\t * @param {*} url"
+  ],
+  [
+    "function extractMainDomainFromUrl(url) {\n\t    try {\n\t        const domainRe = /(https?:\\/\\/)?(([\\w\\d-]+\\.)+[\\w\\d]{2,}",
+    "* Extracting main domain from the url\n\t * @param {*} url"
+  ],
+  [
+    "function stringToArgs(string) {\n  var args = [];\n\n  var parts = string.split(' ');\n  var length = parts.length;\n  var i = 0;\n  var open = false;\n  var grouped = '';\n  var lead = '';\n\n  for (; i < length; i++) {\n    lead = parts[i].substring(0, 1);\n    if (lead === '\"' || lead === '\\'') {\n      open = lead;\n      grouped = parts[i].substring(1);\n    }",
+    "* Converts a string to command line args, in particular\n * groups together quoted values.\n * This is a utility function to allow calling nodemon as a required\n * library, but with the CLI args passed in (instead of an object).\n *\n * @param  {String} string\n * @return {Array}"
+  ],
+  [
+    "function parse(argv) {\n  if (typeof argv === 'string') {\n    argv = argv.split(' ');\n  }",
+    "* Parses the command line arguments `process.argv` and returns the\n * nodemon options, the user script and the executable script.\n *\n * @param  {Array<string> | string} argv full process arguments, including `node` leading arg\n * @return {Object} { options, script, args }"
+  ],
+  [
+    "function nodemonOption(options, arg, eatNext) {\n  // line separation on purpose to help legibility\n  if (arg === '--help' || arg === '-h' || arg === '-?') {\n    var help = eatNext();\n    options.help = help ? help : true;\n  }",
+    "* Given an argument (ie. from process.argv), sets nodemon\n * options and can eat up the argument value\n *\n * @param {import('../..').NodemonSettings} options object that will be updated\n * @param {String} arg current argument from argv\n * @param {Function} eatNext the callback to eat up the next argument in argv\n * @return {Boolean} false if argument was not a nodemon arg"
+  ],
+  [
+    "function parseDelay(value) {\n  var millisPerSecond = 1000;\n  var millis = 0;\n\n  if (value.match(/^\\d*ms$/)) {\n    // Explicitly parse for milliseconds when using ms time specifier\n    millis = parseInt(value, 10);\n  }",
+    "* Given an argument (ie. from nodemonOption()), will parse and return the\n * equivalent millisecond value or 0 if the argument cannot be parsed\n *\n * @param {String} value argument value given to the --delay option\n * @return {Number} millisecond equivalent of the argument"
+  ],
+  [
+    "function command(settings) {\n  var options = settings.execOptions;\n  var executable = options.exec;\n  var args = [];\n\n  // after \"executable\" go the exec args (like --debug, etc)\n  if (options.execArgs) {\n    [].push.apply(args, options.execArgs);\n  }",
+    "* command constructs the executable command to run in a shell including the\n * user script, the command arguments.\n *\n * @param  {Object} settings Object as:\n *                           { execOptions: {\n *                               exec: String,\n *                               [script: String],\n *                               [scriptPosition: Number],\n *                               [execArgs: Array<string>]\n *                             }\n *                           }\n * @return {Object}          an object with the node executable and the\n *                           arguments to the command"
+  ],
+  [
+    "function execFromPackage() {\n  // doing a try/catch because we can't use the path.exist callback pattern\n  // or we could, but the code would get messy, so this will do exactly\n  // what we're after - if the file doesn't exist, it'll throw.\n  try {\n    // note: this isn't nodemon's package, it's the user's cwd package\n    var pkg = require(path.join(process.cwd(), 'package.json'));\n    if (pkg.main !== undefined) {\n      // no app found to run - so give them a tip and get the feck out\n      return { exec: null, script: pkg.main }",
+    "* Reads the cwd/package.json file and looks to see if it can load a script\n * and possibly an exec first from package.main, then package.start.\n *\n * @return {Object} exec & script if found"
+  ],
+  [
+    "function exec(nodemonOptions, execMap) {\n  if (!execMap) {\n    execMap = {}",
+    "* Discovers all the options required to run the script\n * and if a custom exec has been passed in, then it will\n * also try to work out what extensions to monitor and\n * whether there's a special way of running that script.\n *\n * @param  {Object} nodemonOptions\n * @param  {Object} execMap\n * @return {Object} new and updated version of nodemonOptions"
+  ],
+  [
+    "function load(settings, options, config, callback) {\n  config.loaded = [];\n  // first load the root nodemon.json\n  loadFile(options, config, utils.home, function (options) {\n    // then load the user's local configuration file\n    if (settings.configFile) {\n      options.configFile = path.resolve(settings.configFile);\n    }",
+    "* Load the nodemon config, first reading the global root/nodemon.json, then\n * the local nodemon.json to the exec and then overwriting using any user\n * specified settings (i.e. from the cli)\n *\n * @param {Object} settings user defined settings\n * @param {Object} options global options\n * @param {Object} config the config object to be updated\n * @param {Function} callback that receives complete config"
+  ],
+  [
+    "function loadFile(options, config, dir, ready) {\n  if (!ready) {\n    ready = function () {}",
+    "* Looks for a config in the current working directory, and a config in the\n * user's home directory, merging the two together, giving priority to local\n * config. This can then be overwritten later by command line arguments\n *\n * @param  {Function} ready callback to pass loaded settings to"
+  ],
+  [
+    "function nodemon(settings) {\n  bus.emit('boot');\n  nodemon.reset();\n  \n  /** @type {import('..').NodemonSettings}",
+    "* @param {import('..').NodemonSettings | string} settings\n * @returns {import('..').Nodemon}"
+  ],
+  [
+    "function add(rules, which, rule) {\n  if (!{ ignore: 1, watch: 1}",
+    "* Converts file patterns or regular expressions to nodemon\n * compatible RegExp matching rules. Note: the `rules` argument\n * object is modified to include the new rule and new RegExp\n *\n * ### Example:\n *\n *     var rules = { watch: [], ignore: [] };\n *     add(rules, 'watch', '*.js');\n *     add(rules, 'ignore', '/public/');\n *     add(rules, 'watch', ':(\\d)*\\.js'); // note: string based regexp\n *     add(rules, 'watch', /\\d*\\.js/);\n *\n * @param {Object} rules containing `watch` and `ignore`. Also updated during\n *                       execution\n * @param {String} which must be either \"watch\" or \"ignore\"\n * @param {String|RegExp} rule the actual rule."
+  ],
+  [
+    "function load(filename, callback) {\n  parse(filename, function (err, result) {\n    if (err) {\n      // we should have bombed already, but\n      utils.log.error(err);\n      callback(err);\n    }",
+    "* Loads a nodemon config file and populates the ignore\n * and watch rules with it's contents, and calls callback\n * with the new rules\n *\n * @param  {String} filename\n * @param  {Function} callback"
+  ]
+]
