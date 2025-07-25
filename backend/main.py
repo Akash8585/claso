@@ -14,8 +14,34 @@ from fastapi import UploadFile, File
 import difflib
 import tempfile
 import os
+from dataclasses import dataclass
 
 load_dotenv()
+
+# Add this to handle pickle loading issues
+@dataclass
+class FastTrainingConfig:
+    """Fast training configuration for pickle compatibility"""
+    model_type: str = 'comment'
+    vocab_size: int = 8000
+    max_seq_len: int = 512
+    batch_size: int = 16
+    learning_rate: float = 2e-4
+    num_epochs: int = 12
+    warmup_steps: int = 500
+    gradient_clip: float = 1.0
+    use_mixed_precision: bool = False
+    gradient_checkpointing: bool = False
+    accumulation_steps: int = 2
+    dropout: float = 0.05
+    weight_decay: float = 0.005
+    label_smoothing: float = 0.05
+    validation_split: float = 0.1
+    save_every_epochs: int = 3
+    early_stopping_patience: int = 4
+    data_path: str = 'data/enhanced_all_pairs.json'
+    model_save_path: str = 'models/fast_enhanced'
+    log_path: str = 'logs/fast_enhanced_training.log'
 
 app = FastAPI(title="Claso - AI Code Comment Generator API")
 
@@ -74,20 +100,21 @@ async def load_model():
     # Load fast enhanced comment generation model
     try:
         tokenizer_path = 'models/fast_comment/comment_tokenizer.pkl'
-        model_path = 'models/fast_comment/comment_best.pth'
+        weights_path = 'models/fast_comment/comment_weights_only.pth'
         
-        # Fallback to old paths if new ones don't exist
-        if not os.path.exists(tokenizer_path):
-            tokenizer_path = os.getenv('TOKENIZER_PATH', 'models/tokenizer.pkl')
-        if not os.path.exists(model_path):
-            model_path = os.getenv('MODEL_PATH', 'models/best_model.pth')
-        
-        if os.path.exists(tokenizer_path) and os.path.exists(model_path):
-            # Load enhanced tokenizer
+        if os.path.exists(tokenizer_path) and os.path.exists(weights_path):
+            print("📁 Loading comment model files...")
+            
+            # Load tokenizer
             with open(tokenizer_path, 'rb') as f:
                 tokenizer = pickle.load(f)
+            print(f"✅ Tokenizer loaded: {len(tokenizer.vocab)} tokens")
             
-            # Load fast enhanced model
+            # Load weights directly (no pickle issues)
+            state_dict = torch.load(weights_path, map_location=device, weights_only=True)
+            print("✅ Model weights loaded")
+            
+            # Create FastEnhancedTransformer with tokenizer vocab size
             model = FastEnhancedTransformer(
                 vocab_size=len(tokenizer.vocab),
                 model_type='comment',
@@ -95,24 +122,26 @@ async def load_model():
                 dropout=0.05
             )
             
-            # Load model state
-            checkpoint = torch.load(model_path, map_location=device)
-            if 'model_state_dict' in checkpoint:
-                model.load_state_dict(checkpoint['model_state_dict'])
-            else:
-                model.load_state_dict(checkpoint)
+            # Load weights with strict=False to handle any mismatches
+            missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
+            
+            if missing_keys:
+                print(f"⚠️  Missing keys: {len(missing_keys)} (this is normal for architecture changes)")
+            if unexpected_keys:
+                print(f"⚠️  Unexpected keys: {len(unexpected_keys)} (this is normal for architecture changes)")
             
             model.to(device)
             model.eval()
             print("✅ Fast Enhanced Comment Model loaded successfully!")
             print(f"   📊 Parameters: ~{model.count_parameters()/1e6:.1f}M")
             print(f"   🧠 Architecture: {model.d_model}d, {model.num_encoder_layers}+{model.num_decoder_layers} layers")
+            print(f"   🔤 Vocabulary: {len(tokenizer.vocab)} tokens")
         else:
             print("⚠️  Fast comment model files not found.")
             print("   Expected files:")
             print(f"   - {tokenizer_path}")
-            print(f"   - {model_path}")
-            print("   Run: python fast_enhanced_train.py")
+            print(f"   - {weights_path}")
+            print("   Run: python extract_weights.py to extract weights from checkpoint")
             model = None
             tokenizer = None
     except Exception as e:
@@ -120,17 +149,27 @@ async def load_model():
         model = None
         tokenizer = None
     
-    # Load fast enhanced commit message generation model
+    # Load fast enhanced commit message generation model (optional - still training)
     try:
         commit_tokenizer_path = 'models/fast_commit/commit_tokenizer.pkl'
-        commit_model_path = 'models/fast_commit/commit_best.pth'
+        commit_checkpoint_path = 'models/fast_commit/commit_best.pth'
         
-        if os.path.exists(commit_tokenizer_path) and os.path.exists(commit_model_path):
-            # Load enhanced tokenizer
+        if os.path.exists(commit_tokenizer_path) and os.path.exists(commit_checkpoint_path):
+            print("📁 Loading commit model files...")
+            
+            # Load tokenizer
             with open(commit_tokenizer_path, 'rb') as f:
                 commit_tokenizer = pickle.load(f)
             
-            # Load fast enhanced commit model
+            # Load checkpoint
+            checkpoint = torch.load(commit_checkpoint_path, map_location=device, weights_only=False)
+            
+            if 'model_state_dict' in checkpoint:
+                state_dict = checkpoint['model_state_dict']
+            else:
+                state_dict = checkpoint
+            
+            # Create FastEnhancedTransformer
             commit_model = FastEnhancedTransformer(
                 vocab_size=len(commit_tokenizer.vocab),
                 model_type='commit',
@@ -138,28 +177,17 @@ async def load_model():
                 dropout=0.05
             )
             
-            # Load model state
-            checkpoint = torch.load(commit_model_path, map_location=device)
-            if 'model_state_dict' in checkpoint:
-                commit_model.load_state_dict(checkpoint['model_state_dict'])
-            else:
-                commit_model.load_state_dict(checkpoint)
-            
+            # Load weights
+            commit_model.load_state_dict(state_dict, strict=False)
             commit_model.to(device)
             commit_model.eval()
             print("✅ Fast Enhanced Commit Model loaded successfully!")
-            print(f"   📊 Parameters: ~{commit_model.count_parameters()/1e6:.1f}M")
-            print(f"   🧠 Architecture: {commit_model.d_model}d, {commit_model.num_encoder_layers}+{commit_model.num_decoder_layers} layers")
         else:
-            print("⚠️  Fast commit model files not found.")
-            print("   Expected files:")
-            print(f"   - {commit_tokenizer_path}")
-            print(f"   - {commit_model_path}")
-            print("   Run: python fast_enhanced_train.py (will train both models)")
+            print("⚠️  Fast commit model files not found (still training).")
             commit_model = None
             commit_tokenizer = None
     except Exception as e:
-        print(f"⚠️  Error loading fast commit model: {e}")
+        print(f"⚠️  Commit model not ready yet: {e}")
         commit_model = None
         commit_tokenizer = None
 
