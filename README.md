@@ -2,6 +2,71 @@
 
 A production-quality machine learning web application that generates intelligent code comments and commit messages using custom-trained transformer models. Features both lightweight and enhanced models with real ML (no API wrappers) - built for hackathons and production use.
 
+![](diagrams/app1.png)
+![](diagrams/app2.png)
+![](diagrams/app3.png)
+![](diagrams/app1.png)
+![](diagrams/app1.png)
+
+```bash
+source venv/bin/activate && python extract_weights.py
+
+🔧 Extracting comment model weights...
+✅ Comment model weights extracted to: models/fast_comment/comment_weights_only.pth
+📊 Weight keys: 158
+🔤 Vocab size: 8000
+🧠 Model dimension: 256
+
+🔧 Extracting commit model weights...
+✅ Commit model weights extracted to: models/fast_commit/commit_weights_only.pth
+📊 Weight keys: 195
+🔤 Vocab size: 8000
+🧠 Model dimension: 384
+
+```
+
+```bash
+✅ Tokenizer loaded: 8000 tokens
+✅ Model weights loaded
+🚀 Fast comment model initialized:
+   📊 Parameters: ~15.8M
+   🧠 d_model: 256
+   🔄 Encoder layers: 4
+   🔄 Decoder layers: 4
+   👁️  Attention heads: 8
+✅ Fast Enhanced Comment Model loaded successfully!
+   📊 Parameters: ~15.8M
+   🧠 Architecture: 256d, 4+4 layers
+   🔤 Vocabulary: 8000 tokens
+📁 Loading commit model files...
+✅ Commit tokenizer loaded: 8000 tokens
+✅ Commit model weights loaded
+🚀 Fast commit model initialized:
+   📊 Parameters: ~36.0M
+   🧠 d_model: 384
+   🔄 Encoder layers: 5
+   🔄 Decoder layers: 5
+   👁️  Attention heads: 12
+✅ Fast Enhanced Commit Model loaded successfully!
+   📊 Parameters: ~36.0M
+   🧠 Architecture: 384d, 5+5 layers
+   🔤 Vocabulary: 8000 tokens
+INFO:     Application startup complete.
+```
+
+```bash
+🎉 Collected 228 commit pairs
+💾 Saved 228 commit pairs to data/enhanced_commit_pairs.json
+
+🎉 Commit data collection completed!
+📊 Total pairs: 228
+⭐ Average quality score: 0.59
+```
+
+
+
+
+
 ## 🚀 Features
 
 - **Real ML Models**: Custom transformer architecture with multiple model sizes (4.8M to 80M parameters)
